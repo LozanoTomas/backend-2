@@ -18,7 +18,7 @@ app.use(express.json())
 app.use(cookieParser("firmaSecreta"))
 app.use(session({
     store: MongoStore.create({
-        mongoUrl: "mongodb+srv://franciscopugh01:@cluster0.jdow0.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0",
+        mongoUrl: "mongodb+srv://lozanotdlc:4321@cluster0.1cyyd.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0",
         ttl: 60
     }),
     secret: "sesionSecreta",
@@ -26,7 +26,7 @@ app.use(session({
     saveUninitialized: true
 }))
 
-mongoose.connect("mongodb+srv://franciscopugh01:@cluster0.jdow0.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0")
+mongoose.connect("mongodb+srv://lozanotdlc:4321@cluster0.1cyyd.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0")
 .then(() => console.log("DB is connected"))
 .catch((e) => console.log(e))
 
