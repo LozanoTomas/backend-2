@@ -1,4 +1,6 @@
 import cartModel from "../models/carts.models.js";
+import ticketModel from "./tickets.models";
+import productModel from "./products.models";
 
 export const getCart = async(req,res) => {
     try {
@@ -86,5 +88,62 @@ export const deleteCart = async(req,res) => {
         }
     } catch (e) {
         res.status(500).send(e)
+    }
+}
+
+export const checkout = async (req,res) => {
+    try {
+        const cartId = req.params.cid
+        const cart = await cartModel.findById(cartId)
+        const prodSinStock = []
+
+        if(cart)  {
+            //Verificar que todos los productos tengan stock suficiente
+            for(const prod of cart.products) {
+                let producto = await productModel.findById(prod.id_prod)
+                if(producto.stock - prod.quantity < 0 ) {
+                    prodSinStock.push(producto.id)
+                }
+            }
+
+            if(prodSinStock.length === 0) { //Si todos los productos pueden comprarse continuo con la compra
+                let totalAmount = 0
+
+                //Descuento el stock de cada producto y voy calculando el total de compra
+                for(const prod of cart.products){
+                    const producto = await productModel.findById(prod.id_prod)
+                    if(producto) {
+                        producto.stock -= prod.quantity
+                        totalAmount += producto.price * prod.quantity
+                        await producto.save()
+                    }
+                }
+
+                const newTicket = await ticketModel.create({
+                    code: crypto.randomUUID(),
+                    amount: totalAmount,
+                    purcharser: req.user.email,
+                    products: cart.products
+                })
+
+                await cartModel.findByIdAndUpdate(cartId, {products: []})
+                res.status(200).send(newTicket)
+            } else {
+                //Saco los productos sin stock del carrito
+                prodSinStock.forEach((prodId) => {
+                    let indice = cart.products.findIndex(prod => prod.id == prodId) 
+                    cart.products.splice(indice,1)
+                })
+                //Actualizo mi carrito en la BDD
+                await cartModel.findByIdAndUpdate(cartId, {
+                    products: cart.products
+                })
+                res.status(400).send(prodSinStock)
+            }
+        } else {
+            res.status(404).send({message: "Carrito no existe"})
+        }
+    } catch (e) {
+        res.status(500).send({message: e})
     }
 }

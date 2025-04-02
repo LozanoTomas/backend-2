@@ -1,3 +1,4 @@
+import 'dotenv/config'
 import express from 'express'
 import cookieParser from 'cookie-parser'
 import session from 'express-session'
@@ -15,18 +16,18 @@ const PORT = 8080
 const hbs = create()
 
 app.use(express.json())
-app.use(cookieParser("firmaSecreta"))
+app.use(cookieParser(process.env.SECRET_COOKIE))
 app.use(session({
     store: MongoStore.create({
-        mongoUrl: "mongodb+srv://lozanotdlc:4321@cluster0.1cyyd.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0",
+        mongoUrl: process.env.MONGO_URL,
         ttl: 60
     }),
-    secret: "sesionSecreta",
+    secret: process.env.SECRET_SESSION,
     resave: true,
     saveUninitialized: true
 }))
 
-mongoose.connect("mongodb+srv://lozanotdlc:4321@cluster0.1cyyd.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0")
+mongoose.connect(process.env.MONGO_URL)
 .then(() => console.log("DB is connected"))
 .catch((e) => console.log(e))
 
